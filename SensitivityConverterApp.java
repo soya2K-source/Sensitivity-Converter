@@ -1,11 +1,11 @@
 /**
- * Main entry point for the Sensitivity Converter application
+ * Main entry point for the DPI Converter application
  */
-public class SensitivityConverterApp {
+public class DPIConverterApp {
     public static void main(String[] args) {
         // Launch the GUI on the Event Dispatch Thread
         javax.swing.SwingUtilities.invokeLater(() -> {
-            SensitivityConverterGUI gui = new SensitivityConverterGUI();
+            DPIConverterGUI gui = new DPIConverterGUI();
             gui.setVisible(true);
         });
     }
