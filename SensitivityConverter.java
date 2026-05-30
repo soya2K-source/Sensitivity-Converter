@@ -1,84 +1,101 @@
 /**
- * Core logic for sensitivity conversion between different games
+ * Core logic for DPI conversion between different games
  */
-public class SensitivityConverter {
+public class DPIConverter {
     
-    // Sensitivity multipliers for different games
-    private static final double RUN_MODE_MULTIPLIER = 1.0;
-    private static final double WALK_MODE_MULTIPLIER = 0.75;
-    private static final double GAME_A_MULTIPLIER = 1.0;
-    private static final double GAME_B_MULTIPLIER = 1.25;
-    
-    /**
-     * Convert sensitivity value based on game mode
-     * @param sourceValue The source sensitivity value
-     * @param mode The game mode (RUN or WALK)
-     * @param switched Whether games are switched
-     * @return The converted sensitivity value
-     */
-    public double convert(int sourceValue, String mode, boolean switched) {
-        double multiplier = calculateMultiplier(mode, switched);
-        return sourceValue * multiplier;
-    }
+    // Game multiplier constants (normalized to Valorant = 1.0)
+    private static final double VALORANT_MULTIPLIER = 1.0;
+    private static final double CS2_MULTIPLIER = 0.8;
+    private static final double OVERWATCH_MULTIPLIER = 1.15;
+    private static final double APEX_MULTIPLIER = 0.9;
+    private static final double ROBLOX_MULTIPLIER = 0.95;
+    private static final double CROSSFIRE_MULTIPLIER = 1.1;
     
     /**
-     * Calculate the conversion multiplier based on mode and switch state
-     * @param mode The game mode
-     * @param switched Whether games are switched
-     * @return The multiplier to apply
+     * Convert DPI/Sensitivity between two games
+     * @param sourceSensitivity The source game sensitivity
+     * @param sourceGame The source game name
+     * @param targetGame The target game name
+     * @return The converted sensitivity for target game
      */
-    private double calculateMultiplier(String mode, boolean switched) {
-        double modeMultiplier = "RUN".equalsIgnoreCase(mode) ? 
-            RUN_MODE_MULTIPLIER : WALK_MODE_MULTIPLIER;
-        
-        double gameMultiplier = switched ? 
-            GAME_B_MULTIPLIER : GAME_A_MULTIPLIER;
-        
-        return modeMultiplier * gameMultiplier;
-    }
-    
-    /**
-     * Convert sensitivity between specific games
-     * @param sourceValue The source sensitivity
-     * @param sourceGame The source game identifier
-     * @param targetGame The target game identifier
-     * @return The converted sensitivity
-     */
-    public double convertBetweenGames(int sourceValue, String sourceGame, String targetGame) {
+    public double convertDPI(double sourceSensitivity, String sourceGame, String targetGame) {
         double sourceMultiplier = getGameMultiplier(sourceGame);
         double targetMultiplier = getGameMultiplier(targetGame);
         
-        // Convert from source game to neutral, then to target game
-        double neutral = sourceValue / sourceMultiplier;
-        return neutral * targetMultiplier;
+        // Convert from source game to neutral baseline, then to target game
+        double neutralValue = sourceSensitivity / sourceMultiplier;
+        return neutralValue * targetMultiplier;
     }
     
     /**
      * Get the sensitivity multiplier for a specific game
      * @param gameName The game name
-     * @return The multiplier for that game
+     * @return The multiplier for that game (normalized to Valorant = 1.0)
      */
-    private double getGameMultiplier(String gameName) {
+    public double getGameMultiplier(String gameName) {
+        if (gameName == null) return VALORANT_MULTIPLIER;
+        
         switch (gameName.toUpperCase()) {
             case "VALORANT":
-                return 1.0;
+                return VALORANT_MULTIPLIER;
             case "CS2":
-                return 0.8;
+            case "COUNTER-STRIKE 2":
+                return CS2_MULTIPLIER;
+            case "OVERWATCH 2":
             case "OVERWATCH":
-                return 1.15;
+                return OVERWATCH_MULTIPLIER;
+            case "APEX LEGENDS":
             case "APEX":
-                return 0.9;
+                return APEX_MULTIPLIER;
+            case "ROBLOX":
+                return ROBLOX_MULTIPLIER;
+            case "CROSSFIRE":
+                return CROSSFIRE_MULTIPLIER;
             default:
-                return 1.0;
+                return VALORANT_MULTIPLIER;
         }
     }
     
     /**
-     * Validate sensitivity value
-     * @param value The sensitivity value to validate
-     * @return true if valid, false otherwise
+     * Get all supported games
+     * @return Array of supported game names
      */
-    public boolean isValidSensitivity(double value) {
-        return value >= 0 && value <= 100;
+    public String[] getSupportedGames() {
+        return new String[]{
+            "Valorant",
+            "CS2",
+            "Overwatch 2",
+            "Apex Legends",
+            "Roblox",
+            "Crossfire"
+        };
+    }
+    
+    /**
+     * Validate DPI value
+     * @param dpi The DPI value to validate
+     * @return true if valid (between 50 and 3200), false otherwise
+     */
+    public boolean isValidDPI(double dpi) {
+        return dpi >= 50 && dpi <= 3200;
+    }
+    
+    /**
+     * Validate sensitivity value
+     * @param sensitivity The sensitivity value to validate
+     * @return true if valid (between 0 and 100), false otherwise
+     */
+    public boolean isValidSensitivity(double sensitivity) {
+        return sensitivity >= 0 && sensitivity <= 100;
+    }
+    
+    /**
+     * Calculate effective sensitivity (DPI * In-Game Sensitivity)
+     * @param dpi The mouse DPI
+     * @param inGameSensitivity The in-game sensitivity setting
+     * @return The effective sensitivity value
+     */
+    public double calculateEffectiveSensitivity(double dpi, double inGameSensitivity) {
+        return (dpi / 800.0) * inGameSensitivity; // Normalized to 800 DPI baseline
     }
 }
